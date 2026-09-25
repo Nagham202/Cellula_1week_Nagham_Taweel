@@ -1,0 +1,129 @@
+{
+  "settings": {
+    "use_image_description": true,
+    "max_len": 60,
+    "vocab_size": 3739,
+    "embedding_dim": 64,
+    "lstm_units": 64,
+    "dropout": 0.3,
+    "bidirectional": false,
+    "learning_rate": 0.001,
+    "batch_size": 32,
+    "max_epochs": 30,
+    "patience": 3,
+    "use_class_weights": true,
+    "seed": 42
+  },
+  "data": {
+    "train": 1407,
+    "val": 301,
+    "test": 302,
+    "classes": [
+      "Non-Violent Crimes",
+      "Safe",
+      "Unknown S-Type",
+      "Violent Crimes",
+      "unsafe"
+    ]
+  },
+  "training": {
+    "epochs_run": 12,
+    "best_epoch": 9,
+    "seconds": 7.2,
+    "parameters": 272645
+  },
+  "validation": {
+    "macro_f1": 0.8648018648018649,
+    "weighted_f1": 0.946843853820598
+  },
+  "test": {
+    "macro_f1": 0.8138427112211382,
+    "weighted_f1": 0.9270280410269038,
+    "macro_precision": 0.8135972932919497,
+    "macro_recall": 0.8141025641025641,
+    "weighted_precision": 0.9269310858664279,
+    "weighted_recall": 0.9271523178807947
+  },
+  "test_per_class": {
+    "Non-Violent Crimes": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 31.0
+    },
+    "Safe": {
+      "precision": 0.9236641221374046,
+      "recall": 0.9166666666666666,
+      "f1-score": 0.9201520912547528,
+      "support": 132.0
+    },
+    "Unknown S-Type": {
+      "precision": 0.15384615384615385,
+      "recall": 0.15384615384615385,
+      "f1-score": 0.15384615384615385,
+      "support": 13.0
+    },
+    "Violent Crimes": {
+      "precision": 0.9904761904761905,
+      "recall": 1.0,
+      "f1-score": 0.9952153110047847,
+      "support": 104.0
+    },
+    "unsafe": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 22.0
+    },
+    "accuracy": 0.9271523178807947,
+    "macro avg": {
+      "precision": 0.8135972932919497,
+      "recall": 0.8141025641025641,
+      "f1-score": 0.8138427112211382,
+      "support": 302.0
+    },
+    "weighted avg": {
+      "precision": 0.9269310858664279,
+      "recall": 0.9271523178807947,
+      "f1-score": 0.9270280410269038,
+      "support": 302.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      31,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      121,
+      11,
+      0,
+      0
+    ],
+    [
+      0,
+      10,
+      2,
+      1,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      104,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      22
+    ]
+  ]
+}

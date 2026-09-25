@@ -1,0 +1,127 @@
+{
+  "settings": {
+    "use_image_description": true,
+    "max_len": 60,
+    "vocab_size": 3739,
+    "embedding_dim": 64,
+    "rnn_units": 64,
+    "learning_rate": 0.001,
+    "batch_size": 32,
+    "max_epochs": 30,
+    "patience": 3,
+    "use_class_weights": true,
+    "seed": 42
+  },
+  "data": {
+    "train": 1407,
+    "val": 301,
+    "test": 302,
+    "classes": [
+      "Non-Violent Crimes",
+      "Safe",
+      "Unknown S-Type",
+      "Violent Crimes",
+      "unsafe"
+    ]
+  },
+  "training": {
+    "epochs_run": 11,
+    "best_epoch": 8,
+    "seconds": 3.6,
+    "parameters": 247877
+  },
+  "validation": {
+    "macro_f1": 0.8352434126750905,
+    "weighted_f1": 0.9183766912720163
+  },
+  "test": {
+    "macro_f1": 0.7842276274196754,
+    "weighted_f1": 0.8876355126309171,
+    "macro_precision": 0.7904157536616306,
+    "macro_recall": 0.7904184525152267,
+    "weighted_precision": 0.9133319102038385,
+    "weighted_recall": 0.8675496688741722
+  },
+  "test_per_class": {
+    "Non-Violent Crimes": {
+      "precision": 1.0,
+      "recall": 0.9354838709677419,
+      "f1-score": 0.9666666666666667,
+      "support": 31.0
+    },
+    "Safe": {
+      "precision": 0.9051724137931034,
+      "recall": 0.7954545454545454,
+      "f1-score": 0.8467741935483871,
+      "support": 132.0
+    },
+    "Unknown S-Type": {
+      "precision": 0.1,
+      "recall": 0.23076923076923078,
+      "f1-score": 0.13953488372093023,
+      "support": 13.0
+    },
+    "Violent Crimes": {
+      "precision": 0.9903846153846154,
+      "recall": 0.9903846153846154,
+      "f1-score": 0.9903846153846154,
+      "support": 104.0
+    },
+    "unsafe": {
+      "precision": 0.9565217391304348,
+      "recall": 1.0,
+      "f1-score": 0.9777777777777777,
+      "support": 22.0
+    },
+    "accuracy": 0.8675496688741722,
+    "macro avg": {
+      "precision": 0.7904157536616306,
+      "recall": 0.7904184525152267,
+      "f1-score": 0.7842276274196754,
+      "support": 302.0
+    },
+    "weighted avg": {
+      "precision": 0.9133319102038385,
+      "recall": 0.8675496688741722,
+      "f1-score": 0.8876355126309171,
+      "support": 302.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      29,
+      1,
+      0,
+      1,
+      0
+    ],
+    [
+      0,
+      105,
+      27,
+      0,
+      0
+    ],
+    [
+      0,
+      10,
+      3,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      103,
+      1
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      22
+    ]
+  ]
+}
