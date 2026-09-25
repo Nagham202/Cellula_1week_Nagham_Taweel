@@ -16,13 +16,16 @@ from sklearn.utils.class_weight import compute_class_weight
 pd.set_option("display.max_colwidth", 70)
 pd.set_option("display.width", 200)
 
+# settings
 DATA_PATH = Path(__file__).resolve().parent.parent / "toxic_data.csv"
 
+# these classes have only 2-5 unique rows after removing duplicates
 CLASSES_TO_DROP = ["Elections", "Sex-Related Crimes",
                    "Child Sexual Exploitation", "Suicide & Self-Harm"]
 
 SEED = 42
 
+# the label depends on the query + image, so we use both
 USE_IMAGE_DESCRIPTION = True
 
 MAX_LEN = 60
@@ -37,10 +40,12 @@ EPOCHS = 30
 PATIENCE = 3
 USE_CLASS_WEIGHTS = True
 
+# keep False while tuning, the test set is only used once at the end
 RUN_TEST = True
 
 OUTPUT_DIR = Path(__file__).resolve().parent
 
+# load the data
 df = pd.read_csv(DATA_PATH)
 print("Loaded:", df.shape)
 
@@ -49,6 +54,7 @@ df = df.rename(columns={"query": "text", "image descriptions": "image", "Toxic C
 df = df[~df["label"].isin(CLASSES_TO_DROP)]
 print("After dropping the 4 tiny classes:", df.shape)
 
+# lowercase and remove punctuation (apostrophes are kept)
 def clean_text(text):
     text = text.lower()
     text = re.sub(r"[^a-z0-9' ]", " ", text)
@@ -57,6 +63,7 @@ def clean_text(text):
 
 df["clean_text"] = df["text"].apply(clean_text)
 
+# join query and image description, xxsep marks where one ends
 if USE_IMAGE_DESCRIPTION:
     df["clean_text"] = df["clean_text"] + " xxsep " + df["image"].apply(clean_text)
 
@@ -69,6 +76,7 @@ print("\nInput length (words): 99% are at most", int(lengths.quantile(0.99)), "|
 labels_per_text = df.groupby("clean_text")["label"].nunique()
 print("\nTexts that appear with more than one label:", (labels_per_text > 1).sum())
 
+# remove duplicates before splitting so no row ends up in both train and test
 df = df.drop_duplicates(subset="clean_text")
 print("After removing duplicate texts:", df.shape)
 
@@ -77,6 +85,7 @@ counts = df["label"].value_counts()
 percents = (df["label"].value_counts(normalize=True) * 100).round(1)
 print(pd.DataFrame({"count": counts, "percent": percents}))
 
+# convert label names to numbers
 class_names = sorted(df["label"].unique())
 label_to_id = {name: i for i, name in enumerate(class_names)}
 df["label_id"] = df["label"].map(label_to_id)
@@ -85,6 +94,7 @@ print("\nLabel -> number:", label_to_id)
 X = df["clean_text"].values
 y = df["label_id"].values
 
+# 70% train, 15% validation, 15% test
 X_train, X_temp, y_train, y_temp = train_test_split(
     X, y, test_size=0.30, stratify=y, random_state=SEED)
 
@@ -101,6 +111,7 @@ split_counts = pd.DataFrame({
 split_counts.index = class_names
 print(split_counts)
 
+# check for leakage, should print 0
 overlap = set(X_train) & (set(X_val) | set(X_test))
 print("Texts in train that also appear in val/test:", len(overlap))
 
@@ -109,6 +120,7 @@ print("\nUnique words in train:", len(word_counts))
 print("Words that appear only once:", sum(1 for c in word_counts.values() if c == 1))
 print("10 most common:", word_counts.most_common(10))
 
+# tokenize and pad, the vocabulary is built from the training set only
 vectorizer = tf.keras.layers.TextVectorization(
     max_tokens=VOCAB_SIZE,
     standardize=None,
@@ -134,11 +146,12 @@ unknown = (X_val_seq == 1).sum()
 real_words = (X_val_seq > 0).sum()
 print(f"Unknown words in validation: {unknown / real_words:.1%}")
 
+# build the model
 tf.keras.utils.set_random_seed(SEED)
 
 model = tf.keras.Sequential([
     tf.keras.Input(shape=(MAX_LEN,)),
-    tf.keras.layers.Embedding(input_dim=len(vocab), output_dim=EMBEDDING_DIM, mask_zero=True),
+    tf.keras.layers.Embedding(input_dim=len(vocab), output_dim=EMBEDDING_DIM, mask_zero=True),  # mask_zero skips the padding
     tf.keras.layers.SimpleRNN(RNN_UNITS),
     tf.keras.layers.Dense(len(class_names), activation="softmax"),
 ])
@@ -155,9 +168,11 @@ untrained_prediction = model.predict(X_val_seq[:1], verbose=0)
 print("\nUntrained prediction for one sentence:", untrained_prediction.round(3))
 print("True class:", class_names[y_val[0]])
 
+# stop when validation loss stops improving and keep the best weights
 early_stopping = tf.keras.callbacks.EarlyStopping(
     monitor="val_loss", patience=PATIENCE, restore_best_weights=True)
 
+# rare classes get a bigger weight in the loss
 if USE_CLASS_WEIGHTS:
     weights = compute_class_weight("balanced", classes=np.arange(len(class_names)), y=y_train)
     class_weight = dict(enumerate(weights))
@@ -165,6 +180,7 @@ if USE_CLASS_WEIGHTS:
 else:
     class_weight = None
 
+# train
 start_time = time.time()
 history = model.fit(
     X_train_seq, y_train,
@@ -179,6 +195,7 @@ training_time = time.time() - start_time
 epochs_run = len(history.history["loss"])
 print(f"\nTraining took {training_time:.1f} s and ran {epochs_run} epochs")
 
+# f1 on the validation set
 val_probabilities = model.predict(X_val_seq, verbose=0)
 val_predictions = val_probabilities.argmax(axis=1)
 
@@ -188,6 +205,7 @@ print("\nPer-class results on validation:")
 print(classification_report(y_val, val_predictions, target_names=class_names, digits=3, zero_division=0))
 
 
+# training / validation curves
 TRAIN_COLOR = "#2a78d6"
 VAL_COLOR = "#eb6834"
 
@@ -223,6 +241,7 @@ fig.savefig(OUTPUT_DIR / "training_curves.png", dpi=150)
 plt.close(fig)
 print("\nSaved", OUTPUT_DIR / "training_curves.png")
 
+# final evaluation on the test set
 if RUN_TEST:
     test_predictions = model.predict(X_test_seq, verbose=0).argmax(axis=1)
 
@@ -240,6 +259,7 @@ if RUN_TEST:
     print("\nPer-class results on test:")
     print(classification_report(y_test, test_predictions, target_names=class_names, digits=3, zero_division=0))
 
+    # confusion matrix
     matrix = confusion_matrix(y_test, test_predictions)
 
     blues = plt.matplotlib.colors.LinearSegmentedColormap.from_list(
@@ -261,6 +281,7 @@ if RUN_TEST:
     plt.close(fig)
     print("Saved", OUTPUT_DIR / "confusion_matrix.png")
 
+    # save the model and the numbers used in the report
     model.save(OUTPUT_DIR / "rnn_model.keras")
     print("Saved", OUTPUT_DIR / "rnn_model.keras")
 

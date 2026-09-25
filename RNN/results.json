@@ -27,7 +27,7 @@
   "training": {
     "epochs_run": 11,
     "best_epoch": 8,
-    "seconds": 3.6,
+    "seconds": 3.7,
     "parameters": 247877
   },
   "validation": {
